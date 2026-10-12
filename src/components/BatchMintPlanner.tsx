@@ -238,7 +238,7 @@ export const BatchMintPlanner: React.FC<Props> = ({
         return;
       }
 
-      const provider = (window as any).ethereum;
+      const provider = (window as any).__activeEvmProvider || (window as any).ethereum;
       const txParams: any = {
         from: connectedAddress,
         to: tx.to,

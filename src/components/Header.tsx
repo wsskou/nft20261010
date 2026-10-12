@@ -4,6 +4,7 @@ import { ChainConfig, Language } from '../types';
 import { SUPPORTED_CHAINS } from '../config/chains';
 import { getT } from '../locales/translations';
 import { PWAInstallButton } from './PWAInstallButton';
+import { WalletModal } from './WalletModal';
 
 interface Props {
   selectedChain: ChainConfig;
@@ -26,6 +27,7 @@ export const Header: React.FC<Props> = ({
 }) => {
   const t = getT(lang);
   const [chainDropdownOpen, setChainDropdownOpen] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [connecting, setConnecting] = useState(false);
 
   const handleWalletConnect = async () => {
@@ -193,15 +195,23 @@ export const Header: React.FC<Props> = ({
             </div>
           ) : (
             <button
-              onClick={handleWalletConnect}
-              disabled={connecting}
+              onClick={() => setWalletModalOpen(true)}
               className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-colors cursor-pointer"
             >
-              {connecting ? 'Connecting...' : t.connectWallet}
+              {t.connectWallet}
             </button>
           )}
         </div>
       </div>
+
+      {/* Wallet Selector Modal */}
+      <WalletModal
+        isOpen={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+        selectedChain={selectedChain}
+        onConnect={(address) => onConnectWallet(address)}
+        lang={lang}
+      />
     </header>
   );
 };
