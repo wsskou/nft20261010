@@ -1,0 +1,78 @@
+import { ChainConfig } from '../types';
+
+export const SEADROP_SINGLETON = '0x00005EA00Ac477B1030CE78506496e8C2dE24bf5';
+
+export const SUPPORTED_CHAINS: ChainConfig[] = [
+  {
+    id: 1,
+    name: 'Ethereum Mainnet',
+    symbol: 'ETH',
+    rpcUrl: 'https://eth.drpc.org',
+    explorerUrl: 'https://etherscan.io',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 4663,
+    name: 'Robinhood Chain',
+    symbol: 'ETH',
+    rpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
+    explorerUrl: 'https://explorer.mainnet.chain.robinhood.com',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 57073,
+    name: 'Ink',
+    symbol: 'ETH',
+    rpcUrl: 'https://rpc-gel.inkonchain.com',
+    explorerUrl: 'https://explorer.inkonchain.com',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 5042,
+    name: 'Arc',
+    symbol: 'ARC',
+    rpcUrl: 'https://rpc.mainnet.arc.io',
+    explorerUrl: 'https://explorer.arc.io',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 8453,
+    name: 'Base',
+    symbol: 'ETH',
+    rpcUrl: 'https://mainnet.base.org',
+    explorerUrl: 'https://basescan.org',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 42161,
+    name: 'Arbitrum One',
+    symbol: 'ETH',
+    rpcUrl: 'https://arb1.arbitrum.io/rpc',
+    explorerUrl: 'https://arbiscan.io',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 10,
+    name: 'OP Mainnet',
+    symbol: 'ETH',
+    rpcUrl: 'https://mainnet.optimism.io',
+    explorerUrl: 'https://optimistic.etherscan.io',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+  {
+    id: 137,
+    name: 'Polygon PoS',
+    symbol: 'POL',
+    rpcUrl: 'https://polygon-bor-rpc.publicnode.com',
+    explorerUrl: 'https://polygonscan.com',
+    factoryAddress: '0xcf37f60c104aa82f7aadd0aa70eeeb0742324424',
+    isTestnet: false,
+  },
+];

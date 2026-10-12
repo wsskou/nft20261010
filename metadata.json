@@ -1,0 +1,6 @@
+{
+  "name": "Sacrifice Mint - SeaDrop Batch Minter & Probe Studio",
+  "description": "Non-custodial SeaDrop public sale batch minter, bytecode compatibility probe, gas optimizer, and EVM transaction simulation tool.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
