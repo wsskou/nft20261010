@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Check, ExternalLink, Wallet } from 'lucide-react';
 import { ChainConfig, Language } from '../types';
 
@@ -218,11 +219,14 @@ export const WalletModal: React.FC<Props> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4">
-      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+  const modalNode = (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
+      {/* Backdrop overlay dismiss */}
+      <div className="fixed inset-0" onClick={onClose} />
+
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl relative z-10 flex flex-col max-h-[85vh]">
+        {/* Modal Header (Fixed at top) */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-amber-400" />
             <h3 className="text-sm font-semibold text-white">
@@ -231,129 +235,133 @@ export const WalletModal: React.FC<Props> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1"
+            className="text-slate-400 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-800"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {errorMsg && (
-          <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs leading-relaxed">
-            {errorMsg}
-          </div>
-        )}
+        {/* Scrollable Modal Content */}
+        <div className="flex-1 overflow-y-auto min-h-0 py-3 space-y-3 pr-0.5">
+          {errorMsg && (
+            <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs leading-relaxed">
+              {errorMsg}
+            </div>
+          )}
 
-        {/* EIP-6963 Discovered Wallets (if any) */}
-        {discoveredProviders.length > 0 && (
+          {/* EIP-6963 Discovered Wallets (if any) */}
+          {discoveredProviders.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="text-[11px] font-medium text-slate-400 px-1">
+                {lang === 'zh' ? '检测到的已安装插件 (EIP-6963)' : 'Installed Extensions (EIP-6963)'}
+              </div>
+              {discoveredProviders.map((dp) => (
+                <button
+                  key={dp.info.uuid}
+                  type="button"
+                  onClick={() => handleSelectProvider(dp.provider, dp.info.uuid)}
+                  disabled={connectingId !== null}
+                  className="w-full flex items-center justify-between p-2 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-800 hover:border-slate-700 transition-colors text-xs cursor-pointer group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src={dp.info.icon}
+                      alt={dp.info.name}
+                      className="w-5 h-5 rounded-md object-contain"
+                    />
+                    <span className="font-medium text-slate-200 group-hover:text-white">
+                      {dp.info.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    {lang === 'zh' ? '已就绪' : 'Ready'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Standard Wallet List */}
           <div className="space-y-1.5">
             <div className="text-[11px] font-medium text-slate-400 px-1">
-              {lang === 'zh' ? '检测到的已安装插件 (EIP-6963)' : 'Installed Extensions (EIP-6963)'}
+              {lang === 'zh' ? '常用钱包' : 'Popular Wallets'}
             </div>
-            {discoveredProviders.map((dp) => (
-              <button
-                key={dp.info.uuid}
-                type="button"
-                onClick={() => handleSelectProvider(dp.provider, dp.info.uuid)}
-                disabled={connectingId !== null}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-800 bg-slate-950/70 hover:bg-slate-800 hover:border-slate-700 transition-colors text-xs cursor-pointer group"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={dp.info.icon}
-                    alt={dp.info.name}
-                    className="w-6 h-6 rounded-md object-contain"
-                  />
-                  <span className="font-medium text-slate-200 group-hover:text-white">
-                    {dp.info.name}
-                  </span>
-                </div>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                  {lang === 'zh' ? '已就绪' : 'Ready'}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
 
-        {/* Standard Wallet List */}
-        <div className="space-y-1.5">
-          <div className="text-[11px] font-medium text-slate-400 px-1">
-            {lang === 'zh' ? '常用钱包' : 'Popular Wallets'}
-          </div>
+            <div className="space-y-1.5">
+              {STANDARD_WALLETS.map((w) => {
+                const prov = w.getProvider();
+                const isInstalled = !!prov;
+                const isConnecting = connectingId === w.id;
 
-          <div className="space-y-1.5 max-h-64 overflow-y-auto pr-0.5">
-            {STANDARD_WALLETS.map((w) => {
-              const prov = w.getProvider();
-              const isInstalled = !!prov;
-              const isConnecting = connectingId === w.id;
-
-              return (
-                <div
-                  key={w.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 transition-colors text-xs"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isInstalled) {
-                        handleSelectProvider(prov, w.id);
-                      } else {
-                        window.open(w.downloadUrl, '_blank');
-                      }
-                    }}
-                    disabled={connectingId !== null}
-                    className="flex items-center gap-3 flex-1 text-left cursor-pointer"
+                return (
+                  <div
+                    key={w.id}
+                    className="flex items-center justify-between p-2 rounded-xl border border-slate-800 bg-slate-950/60 hover:bg-slate-800/80 transition-colors text-xs"
                   >
-                    <div className="w-6 h-6 rounded-md flex items-center justify-center text-sm">
-                      {w.symbol}
-                    </div>
-                    <div>
-                      <div className="font-medium text-slate-200">{w.name}</div>
-                      <div className="text-[10px] text-slate-500">
-                        {isInstalled
-                          ? lang === 'zh'
-                            ? '已检测到此插件'
-                            : 'Detected'
-                          : lang === 'zh'
-                          ? '点击去官网安装'
-                          : 'Not detected, click to install'}
-                      </div>
-                    </div>
-                  </button>
-
-                  {isInstalled ? (
                     <button
                       type="button"
-                      onClick={() => handleSelectProvider(prov, w.id)}
+                      onClick={() => {
+                        if (isInstalled) {
+                          handleSelectProvider(prov, w.id);
+                        } else {
+                          window.open(w.downloadUrl, '_blank');
+                        }
+                      }}
                       disabled={connectingId !== null}
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-medium cursor-pointer"
+                      className="flex items-center gap-2.5 flex-1 text-left cursor-pointer"
                     >
-                      {isConnecting
-                        ? lang === 'zh'
-                          ? '连接中...'
-                          : 'Connecting...'
-                        : lang === 'zh'
-                        ? '连接'
-                        : 'Connect'}
+                      <div className="w-6 h-6 rounded-md flex items-center justify-center text-sm shrink-0">
+                        {w.symbol}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-medium text-slate-200 truncate">{w.name}</div>
+                        <div className="text-[10px] text-slate-500 truncate">
+                          {isInstalled
+                            ? lang === 'zh'
+                              ? '已检测到此插件'
+                              : 'Detected'
+                            : lang === 'zh'
+                            ? '点击去官网安装'
+                            : 'Not detected, click to install'}
+                        </div>
+                      </div>
                     </button>
-                  ) : (
-                    <a
-                      href={w.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300"
-                    >
-                      <span>{lang === 'zh' ? '安装' : 'Install'}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-                </div>
-              );
-            })}
+
+                    {isInstalled ? (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectProvider(prov, w.id)}
+                        disabled={connectingId !== null}
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 text-[11px] font-medium cursor-pointer shrink-0 ml-2"
+                      >
+                        {isConnecting
+                          ? lang === 'zh'
+                            ? '连接中...'
+                            : 'Connecting...'
+                          : lang === 'zh'
+                          ? '连接'
+                          : 'Connect'}
+                      </button>
+                    ) : (
+                      <a
+                        href={w.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-300 shrink-0 ml-2"
+                      >
+                        <span>{lang === 'zh' ? '安装' : 'Install'}</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="text-[11px] text-slate-500 text-center pt-1 border-t border-slate-800/80">
+        {/* Modal Footer (Fixed at bottom) */}
+        <div className="text-[11px] text-slate-500 text-center pt-2.5 border-t border-slate-800/80 shrink-0">
           {lang === 'zh'
             ? '连接过程纯只读，无需输入密码，绝不索要离线签名。'
             : 'Read-only connection. No password or offline signature required.'}
@@ -361,4 +369,6 @@ export const WalletModal: React.FC<Props> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : null;
 };
